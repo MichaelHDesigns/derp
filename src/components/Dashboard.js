@@ -1,155 +1,319 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import axios from "axios";
-import { Line } from "react-chartjs-2";
+import { ethers } from "ethers";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+// Register the necessary components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-// Container for the entire dashboard
+// Container for the whole component
 const Container = styled.div`
   padding: 20px;
-  color: white;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns */
-  gap: 15px; /* Reduced gap for charts to be closer together */
-  justify-items: center;
+  color: var(--text-color);
+  background: transparent;
+
+  /* Adjust for medium screens (tablets) */
+  @media (max-width: 1350px) {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+    margin-top: 10%; /* Move the content further down for smaller screens */
+  }
+
+  /* Adjust for medium screens (tablets) */
+  @media (max-width: 1250px) {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+    margin-top: 15%; /* Move the content further down for smaller screens */
+  }
+
+  /* Adjust for medium screens (tablets) */
+  @media (max-width: 1150px) {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+    margin-top: 20%; /* Move the content further down for smaller screens */
+  }
 
   /* Adjust for medium screens (tablets) */
   @media (max-width: 1024px) {
     grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+    margin-top: 25%; /* Move the content further down for smaller screens */
   }
 
   /* Adjust for smaller screens (phones) */
-  @media (max-width: 768px) {
+  @media (max-width: 800px) {
     grid-template-columns: 1fr; /* Stack charts vertically */
     padding: 10px; /* Reduce padding for smaller screens */
+    margin-top: 35%; /* Move the content further down for smaller screens */
+  }
+
+  /* Adjust for smaller screens (phones) */
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr; /* Stack charts vertically */
+    padding: 10px; /* Reduce padding for smaller screens */
+    margin-top: 40%; /* Move the content further down for smaller screens */
   }
 `;
 
-// Chart container with specific size
-const ChartContainer = styled.div`
-  width: 320px;
-  max-width: 100%; /* Ensure it doesn't get too large on small screens */
-  background: #2a2a2a;
+// Header section
+const Header = styled.div`
+  margin-top: 17%;
+`;
+
+// Button styling for connect and disconnect
+const Button = styled.button`
+  padding: 10px 20px;
+  margin: 10px 0;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: ${({ variant }) =>
+    variant === "connect" ? "#1abc9c" : "#e74c3c"};
+  &:hover {
+    background: ${({ variant }) =>
+      variant === "connect" ? "#16a085" : "#c0392b"};
+  }
+`;
+
+// Wallet info container with spacing
+const WalletInfoDiv = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns for Ethereum and Base */
+  gap: 20px;
+  margin-top: 20px;
+  align-items: start; /* Align items to the top of their grid cells */
+`;
+
+const BalanceCard = styled.div`
+  background: var(--card-background-color);
   border-radius: 12px;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.5), 
+    inset 4px 4px 8px rgba(0, 0, 0, 0.3), 
+    inset -4px -4px 8px rgba(255, 255, 255, 0.2);
   padding: 20px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+`;
+
+const Section = styled.div`
   text-align: center;
-
-  /* Make chart containers responsive */
-  @media (max-width: 768px) {
-    width: 100%; /* Full width for small screens */
-    padding: 15px;
-  }
+  margin-bottom: 10px; /* Add spacing between sections */
 `;
 
-// Title for each chart
-const ChartTitle = styled.h3`
-  margin-bottom: 15px;
+const ChartContainer = styled.div`
+  width: 100%;
+  max-width: 300px; /* Ensure consistent chart size */
+  margin-top: 10px;
 `;
 
-// Main dashboard component
+const Label = styled.div`
+  font-size: 1.1em;
+  color: var(--text-color);
+`;
+
+const Value = styled.div`
+  font-size: 1.2em;
+  font-weight: bold;
+  color: ${(props) => (props.isFiat ? "#2ecc71" : "var(--text-color)")};
+`;
+
+
 const Dashboard = () => {
-  const [ethData, setEthData] = useState(null);
-  const [baseData, setBaseData] = useState(null);
-  const [btcData, setBtcData] = useState(null);
-
-  const fetchData = async (coin) => {
-    const { data } = await axios.get(
-      `https://api.coingecko.com/api/v3/coins/${coin}/market_chart`,
-      {
-        params: { vs_currency: "usd", days: "30" },
-      }
-    );
-
-    return {
-      labels: data.prices.map(([timestamp]) =>
-        new Date(timestamp).toLocaleDateString()
-      ),
-      datasets: [
-        {
-          label: `${coin.toUpperCase()} Price (USD)`,
-          data: data.prices.map(([, price]) => price),
-          borderColor: '#a0f72e',
-          backgroundColor: 'rgba(160, 247, 46, 0.2)',
-          tension: 0.3,
-        },
-      ],
-    };
-  };
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [ethereumBalance, setEthereumBalance] = useState(null);
+  const [baseBalance, setBaseBalance] = useState(null);
+  const [ethereumFiatValue, setEthereumFiatValue] = useState(null);
+  const [baseFiatValue, setBaseFiatValue] = useState(null);
 
   useEffect(() => {
-    const fetchDataAsync = async () => {
-      const eth = await fetchData("ethereum");
-      const base = await fetchData("base");
-      const btc = await fetchData("bitcoin");
-      setEthData(eth);
-      setBaseData(base);
-      setBtcData(btc);
+    const checkWalletConnection = async () => {
+      if (window.ethereum) {
+        const connectedAddress = localStorage.getItem("walletAddress");
+        if (connectedAddress) {
+          setWalletAddress(connectedAddress);
+          fetchBalances(connectedAddress);
+        }
+
+        window.ethereum.on("chainChanged", () => {
+          window.location.reload();
+        });
+
+        window.ethereum.on("accountsChanged", (accounts) => {
+          if (accounts.length === 0) {
+            disconnectWallet();
+          } else {
+            setWalletAddress(accounts[0]);
+            fetchBalances(accounts[0]);
+          }
+        });
+      }
     };
-    fetchDataAsync();
+
+    checkWalletConnection();
   }, []);
 
-  const options = {
-    responsive: true,
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      alert("Please install MetaMask or a compatible wallet extension!");
+      return;
+    }
+
+    try {
+      const [address] = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      setWalletAddress(address);
+      localStorage.setItem("walletAddress", address);
+      fetchBalances(address);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      alert("Connection failed! Please try again.");
+    }
+  };
+
+  const fetchBalances = async (address) => {
+    try {
+      const ethProvider = new ethers.JsonRpcProvider("https://eth.llamarpc.com");
+      const ethWeiBalance = await ethProvider.getBalance(address);
+      const ethBalanceFormatted = ethers.formatEther(ethWeiBalance);
+      setEthereumBalance(ethBalanceFormatted);
+
+      const baseProvider = new ethers.JsonRpcProvider("https://base.llamarpc.com");
+      const baseWeiBalance = await baseProvider.getBalance(address);
+      const baseBalanceFormatted = ethers.formatEther(baseWeiBalance);
+      setBaseBalance(baseBalanceFormatted);
+
+      fetchFiatValues(ethBalanceFormatted, baseBalanceFormatted);
+    } catch (error) {
+      console.error("Error fetching balances:", error);
+    }
+  };
+
+  const fetchFiatValues = async (ethBalance, baseBalance) => {
+    try {
+      const response = await fetch(
+        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+      );
+      const prices = await response.json();
+      const ethPrice = prices.ethereum?.usd || 0;
+      setEthereumFiatValue((ethBalance * ethPrice).toFixed(2));
+      setBaseFiatValue((baseBalance * ethPrice).toFixed(2));
+    } catch (error) {
+      console.error("Error fetching fiat values:", error);
+    }
+  };
+
+  const disconnectWallet = () => {
+    setWalletAddress(null);
+    setEthereumBalance(null);
+    setBaseBalance(null);
+    setEthereumFiatValue(null);
+    setBaseFiatValue(null);
+    localStorage.removeItem("walletAddress");
+  };
+
+  const chartOptions = {
     plugins: {
       legend: {
         labels: {
-          color: 'white', // Set legend labels color to white
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => `${context.dataset.label}: $${context.raw.toFixed(2)}`, // Format tooltips
+          color: 'var(--text-color)',
         },
       },
     },
     scales: {
       x: {
         ticks: {
-          color: 'white', // Set x-axis labels to white
+          color: 'var(--text-color)',
         },
       },
       y: {
         ticks: {
-          color: 'white', // Set y-axis labels to white
+          color: 'var(--text-color)',
         },
       },
     },
   };
 
+  const getChartData = (label, value, color) => ({
+    labels: [label],
+    datasets: [
+      {
+        label: 'Fiat Value (USD)',
+        data: [value || 0],
+        backgroundColor: [color],
+      },
+    ],
+  });
+
   return (
     <Container>
-      <ChartContainer>
-        <ChartTitle>Ethereum (ETH)</ChartTitle>
-        {ethData ? <Line data={ethData} options={options} /> : <p>Loading...</p>}
-      </ChartContainer>
-      <ChartContainer>
-        <ChartTitle>Base (BASE)</ChartTitle>
-        {baseData ? <Line data={baseData} options={options} /> : <p>Loading...</p>}
-      </ChartContainer>
-      <ChartContainer>
-        <ChartTitle>Bitcoin (BTC)</ChartTitle>
-        {btcData ? <Line data={btcData} options={options} /> : <p>Loading...</p>}
-      </ChartContainer>
+      <Header>
+        <h2>Dashboard</h2>
+        {!walletAddress ? (
+          <Button variant="connect" onClick={connectWallet}>
+            Connect Wallet
+          </Button>
+        ) : (
+          <>
+            <p>Wallet Address: {walletAddress}</p>
+            <Button variant="disconnect" onClick={disconnectWallet}>
+              Disconnect Wallet
+            </Button>
+          </>
+        )}
+      </Header>
+      {walletAddress && (
+        <WalletInfoDiv>
+        {/* Ethereum Balance Card */}
+        <BalanceCard>
+          <h3>Ethereum</h3>
+          <Section>
+            <Label>Balance</Label>
+            <Value>{ethereumBalance || "0.00"} ETH</Value>
+          </Section>
+          <Section>
+            <Label>Fiat Value</Label>
+            <Value isFiat>${baseFiatValue || "0.00"}</Value>
+          </Section>
+          <ChartContainer>
+            <Bar
+              data={getChartData("Ethereum", ethereumFiatValue, "#2ecc71")}
+              options={chartOptions}
+            />
+          </ChartContainer>
+        </BalanceCard>
+      
+        {/* Base Balance Card */}
+        <BalanceCard>
+          <h3>Base</h3>
+          <Section>
+            <Label>Balance</Label>
+            <Value>{baseBalance || "0.00"} BASE</Value>
+          </Section>
+          <Section>
+            <Label>Fiat Value</Label>
+            <Value isFiat>${baseFiatValue || "0.00"}</Value>
+          </Section>
+          <ChartContainer>
+            <Bar
+              data={getChartData("Base", baseFiatValue, "#e74c3c")}
+              options={chartOptions}
+            />
+          </ChartContainer>
+        </BalanceCard>
+
+      </WalletInfoDiv>
+      
+      )}
     </Container>
   );
 };

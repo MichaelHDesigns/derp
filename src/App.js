@@ -1,16 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./components/Home";
+import Top from "./components/Top"; // Import Top component
 import Dashboard from "./components/Dashboard";
-import Rewards from "./components/Rewards";
 import SideNav from "./components/SideNav";
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
+
+const GlobalStyle = createGlobalStyle`
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+  }
+`;
 
 const Layout = styled.div`
   display: flex;
   flex-direction: row;
   height: 100vh;
+  overflow: hidden;
 
-  /* Stack layout for smaller screens */
   @media (max-width: 768px) {
     flex-direction: column;
   }
@@ -18,26 +27,47 @@ const Layout = styled.div`
 
 const Main = styled.div`
   flex: 1;
-  background: #2b2b2b;
-  color: white;
   padding: 20px;
   overflow: auto;
-
-  /* Adjust padding for smaller screens */
-  @media (max-width: 768px) {
-    padding: 15px;
-  }
 `;
 
 const App = () => {
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.style.setProperty(
+      "--background-color",
+      isDarkMode ? "#ffffff" : "#2b2b2b"
+    );
+    document.documentElement.style.setProperty(
+      "--text-color",
+      isDarkMode ? "#000000" : "#ffffff"
+    );
+    document.documentElement.style.setProperty(
+      "--card-background-color",
+      isDarkMode ? "#f0f0f0" : "#333333"
+    );
+
+    if (isDarkMode) {
+      document.body.classList.add("light-mode");
+    } else {
+      document.body.classList.remove("light-mode");
+    }
+  };
+
   return (
     <Router>
+      <GlobalStyle />
       <Layout>
-        <SideNav />
+        <SideNav toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
         <Main>
+          {/* Place the Top component here */}
+          <Top toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
+
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/rewards" element={<Rewards />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </Main>
       </Layout>
