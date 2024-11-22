@@ -38,7 +38,7 @@ const App = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.style.setProperty(
       "--background-color",
-      isDarkMode ? "#ffffff" : "#2b2b2b"
+      isDarkMode ? "#b3b1b1" : "#2b2b2b"
     );
     document.documentElement.style.setProperty(
       "--text-color",
@@ -46,7 +46,7 @@ const App = () => {
     );
     document.documentElement.style.setProperty(
       "--card-background-color",
-      isDarkMode ? "#f0f0f0" : "#333333"
+      isDarkMode ? "#b3b1b1" : "#333333"
     );
 
     if (isDarkMode) {

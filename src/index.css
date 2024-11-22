@@ -5,9 +5,9 @@
 }
 
 .light-mode {
-  --background-color: #ffffff; /* Light mode background */
+  --background-color: #b3b1b1; /* Light mode background */
   --text-color: #000000; /* Light mode text */
-  --nav-background-color: #f0f0f0; /* Light mode nav background */
+  --nav-background-color: #b3b1b1; /* Light mode nav background */
 }
 
 body {
