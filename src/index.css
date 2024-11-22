@@ -2,12 +2,14 @@
   --background-color: #2b2b2b; /* Dark mode background */
   --text-color: #ffffff; /* Dark mode text */
   --nav-background-color: #1c1c1c; /* Dark mode nav background */
+  --grid-line-color: rgba(255, 255, 255, 0.2); /* Light gridlines */
 }
 
 .light-mode {
   --background-color: #b3b1b1; /* Light mode background */
   --text-color: #000000; /* Light mode text */
   --nav-background-color: #b3b1b1; /* Light mode nav background */
+  --grid-line-color: rgba(0, 0, 0, 0.2); /* Dark gridlines for light mode */
 }
 
 body {

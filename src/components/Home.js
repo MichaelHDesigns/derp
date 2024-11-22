@@ -165,7 +165,7 @@ const Home = () => {
     plugins: {
       legend: {
         labels: {
-          color: 'var(--text-color)', // Use CSS variable for legend labels
+          color: 'var(--text-color)', // Dynamic legend text color
         },
       },
       tooltip: {
@@ -177,12 +177,18 @@ const Home = () => {
     scales: {
       x: {
         ticks: {
-          color: 'var(--text-color)', // Use CSS variable for x-axis labels
+          color: 'var(--text-color)', // Dynamic x-axis text color
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.2)', // Optional: Light grid for dark mode
         },
       },
       y: {
         ticks: {
-          color: 'var(--text-color)', // Use CSS variable for y-axis labels
+          color: 'var(--text-color)', // Dynamic y-axis text color
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.2)', // Optional: Light grid for dark mode
         },
       },
     },

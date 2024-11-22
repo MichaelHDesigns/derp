@@ -1,11 +1,5 @@
-html, body {
-  height: 100%;
-  margin: 0;
-}
-
 .App {
   text-align: center;
-  height: 100%;
 }
 
 .App-logo {
@@ -28,7 +22,6 @@ html, body {
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
-  height: 100%;
 }
 
 .App-link {

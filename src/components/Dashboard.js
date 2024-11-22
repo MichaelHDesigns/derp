@@ -222,22 +222,34 @@ const Dashboard = () => {
   };
 
   const chartOptions = {
+    responsive: true,
     plugins: {
       legend: {
         labels: {
-          color: 'var(--text-color)',
+          color: 'var(--text-color)', // Dynamic legend text color
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => `${context.dataset.label}: $${context.raw.toFixed(2)}`, // Format tooltips
         },
       },
     },
     scales: {
       x: {
         ticks: {
-          color: 'var(--text-color)',
+          color: 'var(--text-color)', // Dynamic x-axis text color
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.2)', // Optional: Light grid for dark mode
         },
       },
       y: {
         ticks: {
-          color: 'var(--text-color)',
+          color: 'var(--text-color)', // Dynamic y-axis text color
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.2)', // Optional: Light grid for dark mode
         },
       },
     },
