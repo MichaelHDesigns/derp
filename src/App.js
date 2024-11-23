@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
-import Top from "./components/Top"; // Import Top component
+import Top from "./components/Top";
 import Dashboard from "./components/Dashboard";
 import SideNav from "./components/SideNav";
-import Pong from "./games/pong/Pong"; // Correct import path for Pong component
+import Games from "./components/Games";
+import Pong from "./games/pong/Pong";
+import Breakout from "./games/breakout/Breakout";
+import Snake from "./games/snake/Snake";
 import styled, { createGlobalStyle } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
@@ -30,7 +33,7 @@ const Main = styled.div`
   flex: 1;
   padding: 20px;
   overflow: auto;
-  margin-top: 50px;  // Add margin here to move content down
+  margin-top: 50px;
 `;
 
 const App = () => {
@@ -53,7 +56,7 @@ const App = () => {
     );
     document.documentElement.style.setProperty(
       '--grid-line-color',
-      isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)' // Add dynamic gridline
+      isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)'
     );
   
     if (isDarkMode) {
@@ -69,13 +72,14 @@ const App = () => {
       <Layout>
         <SideNav toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
         <Main>
-          {/* Place the Top component here */}
           <Top toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
-
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/games" element={<Pong />} /> {/* Added route for Pong game */}
+            <Route path="/games" element={<Games />} />
+            <Route path="/games/pong" element={<Pong />} />
+            <Route path="/games/breakout" element={<Breakout />} />
+            <Route path="/games/snake" element={<Snake />} />
           </Routes>
         </Main>
       </Layout>
